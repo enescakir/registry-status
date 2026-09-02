@@ -270,14 +270,6 @@ h1 {
   margin-bottom: 8px;
 }
 .ribbon-place { font-size: 14.5px; font-weight: 600; }
-.ribbon-runner {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  color: var(--ink-mute);
-  margin-left: auto;
-}
-
 .ribbon-track { display: flex; align-items: center; gap: 12px; }
 
 /* Segments are separated by a 2px gap in the ground colour, never a stroke. */
@@ -366,7 +358,6 @@ h1 {
   border-bottom: 1px solid var(--hairline);
 }
 .card-place { font-size: 17px; font-weight: 600; margin: 0; }
-.card-where { font-size: 13px; color: var(--ink-dim); margin: 2px 0 0; }
 .card-state { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 500; }
 
 .metrics {
@@ -740,7 +731,6 @@ table.data tbody tr:last-child th { border-bottom: 0; }
   /* The ribbon rows get their own lines rather than fighting for one. */
   .ribbon-head { flex-direction: column; gap: 4px; }
   .ribbon-label { flex-wrap: wrap; }
-  .ribbon-runner { margin-left: 0; flex-basis: 100%; }
   .hero-facts { margin-top: 38px; }
   .metrics { grid-template-columns: 1fr 1fr; gap: 16px 12px; }
   .metric-value { font-size: 23px; }

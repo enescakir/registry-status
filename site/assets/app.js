@@ -9,8 +9,8 @@ const DATA_URL = 'data/ghcr.json';
    Colours are bound to the region here and nowhere else, so a filter can
    never repaint a series. */
 const REGIONS = [
-  { key: 'ubicloud', name: 'Europe', where: 'Ubicloud runners', color: 'var(--eu)' },
-  { key: 'github', name: 'United States', where: 'GitHub-hosted runners', color: 'var(--us)' },
+  { key: 'ubicloud', name: 'Europe', color: 'var(--eu)' },
+  { key: 'github', name: 'United States', color: 'var(--us)' },
 ];
 
 const RANGES = {
@@ -137,7 +137,7 @@ function renderRibbon(groups) {
     const label = el('div', 'ribbon-label');
     const dot = el('span', 'dot');
     dot.style.background = region.color;
-    label.append(dot, el('span', 'ribbon-place', region.name), el('span', 'ribbon-runner', region.where));
+    label.append(dot, el('span', 'ribbon-place', region.name));
 
     const track = el('div', 'ribbon-track');
     const bar = el('div', 'ribbon-bar');
@@ -238,16 +238,12 @@ function renderHeroFacts(data) {
     .map((r) => data.groups[r.key] && data.groups[r.key].latest)
     .find((l) => l && isNum(l.reps));
 
-  const labels = REGIONS
-    .map((r) => data.groups[r.key] && data.groups[r.key].runner_label)
-    .filter(Boolean);
-
   const facts = [
     ['Cadence', measuredCadence(data.groups) || '—',
       reps ? `${reps.reps} repetitions per runner` : ''],
     ['Payload', latest ? `${Math.round(latest.blob_bytes / 1048576)} MB` : '—',
       'random bytes, new every run'],
-    ['Runners', labels.length ? labels.join(' · ') : '—', 'the two matrix legs'],
+    ['Stages timed', '5', 'DNS through docker pull'],
     ['History', isNum(data.total_samples) ? data.total_samples.toLocaleString() : '—',
       data.first_sample ? `probes since ${dayFmt.format(new Date(data.first_sample))}` : 'probes recorded'],
   ];
@@ -294,7 +290,7 @@ function renderCards(groups) {
     const dot = el('span', 'dot');
     dot.style.cssText = `background:${region.color};display:inline-block;margin-right:9px;vertical-align:0.08em`;
     place.append(dot, document.createTextNode(region.name));
-    heading.append(place, el('p', 'card-where', region.where + (group && group.runner_label ? ` · ${group.runner_label}` : '')));
+    heading.append(place);
 
     const latest = group && group.latest;
     const status = latest ? latest.status : 'unknown';

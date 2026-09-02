@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ghcr.io from Europe — registry status</title>
-<meta name="description" content="Hourly availability and performance measurements for ghcr.io, taken from Ubicloud runners in Europe and GitHub-hosted runners in the United States.">
+<meta name="description" content="Hourly availability and performance measurements for ghcr.io, taken from CI runners in Europe and the United States.">
 <meta name="color-scheme" content="dark">
 <meta property="og:title" content="ghcr.io from Europe — registry status">
-<meta property="og:description" content="Hourly push, pull and API measurements for ghcr.io from EU and US CI runners.">
+<meta property="og:description" content="Hourly push, pull and API measurements for ghcr.io from CI runners in Europe and the United States.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230a1320'/><rect x='6' y='12' width='9' height='8' rx='2' fill='%233987e5'/><rect x='17' y='12' width='9' height='8' rx='2' fill='%23d95926'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,10 +44,10 @@
           <h1>How far is ghcr.io from Europe?</h1>
           <p class="lede">
             ghcr.io sits behind an anycast edge, so the honest answer is measured,
-            not assumed. Every hour, <strong>Ubicloud runners in Europe</strong> and
-            <strong>GitHub-hosted runners in the United States</strong> push and pull the
-            same freshly generated image and time every stage of the request. Same
-            payload, same script, two continents.
+            not assumed. Every hour, a CI runner <strong>in Europe</strong> and one
+            <strong>in the United States</strong> push and pull the same freshly
+            generated image and time every stage of the request. Same payload, same
+            script, two continents.
           </p>
         </div>
 
@@ -208,11 +208,11 @@
       </div>
       <div class="method">
         <div class="method-item">
-          <h3>Two runners, one script</h3>
+          <h3>Two regions, one script</h3>
           <p>
-            A matrix job runs the identical probe script on a Ubicloud runner in Europe
-            and a GitHub-hosted runner in the United States, three repetitions each,
-            once an hour.
+            A matrix job runs the identical probe script on a runner in Europe and a
+            runner in the United States, three repetitions each, once an hour. Nothing
+            differs between the two legs except where they run.
           </p>
         </div>
         <div class="method-item">
