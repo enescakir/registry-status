@@ -28,11 +28,6 @@ on:
 permissions:
   contents: read
 
-# Never let two monitor runs commit data at the same time.
-concurrency:
-  group: monitor-ghcr
-  cancel-in-progress: false
-
 env:
   GHCR_PACKAGE: registry-status-probe
   REPS: ${{ github.event.inputs.reps || '3' }}
@@ -91,6 +86,13 @@ jobs:
     needs: probe
     if: always()
     runs-on: ubuntu-latest
+    # Only the data commit has to be serialised, so the group belongs here
+    # rather than on the workflow. Guarding the whole workflow meant a slow
+    # Pages deploy held a finished run open and delayed the next measurement -
+    # exactly what a monitor must not do.
+    concurrency:
+      group: monitor-ghcr-data
+      cancel-in-progress: false
     permissions:
       contents: write
       packages: write
@@ -166,7 +168,12 @@ jobs:
   publish:
     name: Publish site
     needs: persist
-    if: always()
+    # On a push, publish.yml already runs for that same commit through its own
+    # trigger. Calling it here as well starts a second deployment, and Pages
+    # supersedes the older of the two and cancels its run - so the duplicate
+    # showed up as a cancelled workflow. Scheduled and dispatched runs get no
+    # push event, so they still have to ask for the deploy themselves.
+    if: always() && github.event_name != 'push'
     permissions:
       contents: read
       pages: write

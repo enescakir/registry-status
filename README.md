@@ -60,6 +60,30 @@ incompressible and unique, so push and pull both move real bytes.
 **The size is fixed.** Timing a moving target like `python:latest` makes numbers
 from different months incomparable.
 
+## When things run
+
+| Workflow | Runs on |
+|---|---|
+| `monitor.yml` | the hourly schedule, a manual dispatch, and a push to `main` that touches `probes/`, `scripts/ingest.py`, `scripts/report.py`, `scripts/prune-packages.sh` or the workflow itself |
+| `publish.yml` | any push to `main`, a manual dispatch, and a call from `monitor.yml` after a scheduled or dispatched run commits results |
+
+The monitor's push trigger is deliberately scoped: a run moves about 240 MB to
+and from ghcr.io, so editing the README or the site should not start one, while
+changing the probe should. Widen the `paths:` list in
+[`monitor.yml`](.github/workflows/monitor.yml) to measure on every push.
+
+A push made with `GITHUB_TOKEN` does not trigger workflows, which is why the
+monitor's own data commits cannot start a loop, and why the monitor calls the
+publish workflow itself instead of relying on its push trigger. Concurrency
+groups keep one run committing data at a time and Pages deploys queued rather
+than cancelling each other. The monitor's group sits on its commit job, not on
+the workflow, so a slow deploy can never delay the next measurement.
+
+A push-triggered monitor run skips its own publish step, because `publish.yml`
+is already running for that commit. Two deployments of one commit are not
+harmless: Pages supersedes the older one and cancels its run, which reads as a
+failure in the run list.
+
 ## Repository layout
 
 ```
