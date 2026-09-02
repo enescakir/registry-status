@@ -5,14 +5,12 @@ on:
   # GITHUB_TOKEN does not trigger workflows, so the deploy has to be invoked
   # explicitly rather than by watching the data commits.
   workflow_call:
-  # Site or pipeline changes pushed by a human.
+  # Any push to main by a human republishes: the build is ~20 s and touches
+  # nothing outside the repository. Pushes made with GITHUB_TOKEN, which is how
+  # the monitor commits results, do not trigger workflows - the monitor calls
+  # this workflow itself once its data has landed.
   push:
     branches: [main]
-    paths:
-      - 'site/**'
-      - 'scripts/aggregate.py'
-      - 'scripts/seo.py'
-      - '.github/workflows/publish.yml'
   workflow_dispatch:
 
 permissions:
@@ -22,7 +20,12 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # Queue rather than cancel. A push that touches the probe starts a monitor run
+  # whose own publish job deploys, and the same push triggers this workflow
+  # directly; cancelling would mark the monitor run cancelled for a reason that
+  # has nothing to do with a measurement. Deploys are ~20 s, so waiting is
+  # cheaper than a misleading red run.
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:

@@ -1,6 +1,16 @@
 name: Monitor ghcr.io
 
 on:
+  push:
+    branches: [main]
+    # Scoped to the measurement path. A run moves ~240 MB to and from ghcr.io,
+    # so a README or site edit should not trigger one; a probe change should.
+    paths:
+      - 'probes/**'
+      - 'scripts/ingest.py'
+      - 'scripts/report.py'
+      - 'scripts/prune-packages.sh'
+      - '.github/workflows/monitor.yml'
   schedule:
     # Hourly, offset off the hour to avoid the scheduling stampede at :00.
     - cron: '17 * * * *'
