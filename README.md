@@ -14,18 +14,18 @@ runner pays for that distance on every `docker pull`. This measures how much.
 
 ## Setting it up
 
-1. **Enable Pages.** Settings → Pages → Source: **GitHub Actions**.
-2. **Allow the workflow to commit.** Settings → Actions → General → Workflow
+1. **Allow the workflow to commit.** Settings → Actions → General → Workflow
    permissions: **Read and write**.
-3. **Check the Ubicloud runner label.** The matrix in
+2. **Check the Ubicloud runner label.** The matrix in
    [`monitor.yml`](.github/workflows/monitor.yml) uses `ubicloud`. Change it if
    your installation exposes a different label (`ubicloud-standard-4`, an ARM
    variant, and so on), and update `region` in the same entry so the site
    labels it correctly.
-4. **Run it once by hand.** Actions → *Monitor ghcr.io* → Run workflow. The
+3. **Run it once by hand.** Actions → *Monitor ghcr.io* → Run workflow. The
    first run creates the `registry-status-probe` package, appends results to
-   `data/ghcr/`, and deploys the site.
-5. **Make the probe package public** (recommended — see *Traffic* below).
+   `data/ghcr/`, and deploys the site. Pages is switched on automatically by
+   `configure-pages`, so there is nothing to set up beforehand.
+4. **Make the probe package public** (recommended — see *Traffic* below).
    Packages → `registry-status-probe` → Package settings → Change visibility.
 
 Until the first run finishes the site publishes fine and says it is waiting for

@@ -38,7 +38,11 @@ jobs:
         run: python3 scripts/aggregate.py
 
       - name: Configure Pages
+        # enablement turns Pages on via the API on first run, so the repository
+        # needs no manual setup before the first deploy.
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
