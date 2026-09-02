@@ -200,55 +200,6 @@
       <div id="incidents"></div>
     </section>
 
-    <!-- ---------------------------------------------------------- method -->
-    <section class="wrap band" id="method">
-      <div class="band-head">
-        <p class="eyebrow">Method</p>
-        <h2 class="band-title">How these numbers are produced</h2>
-      </div>
-      <div class="method">
-        <div class="method-item">
-          <h3>Two regions, one script</h3>
-          <p>
-            A matrix job runs the identical probe script on a runner in Europe and a
-            runner in the United States, three repetitions each, once an hour. Nothing
-            differs between the two legs except where they run.
-          </p>
-        </div>
-        <div class="method-item">
-          <h3>A fresh payload every time</h3>
-          <p>
-            Each repetition builds an image from random bytes. Registries deduplicate
-            layers by digest, so re-pushing a known layer would measure nothing —
-            a new payload forces a real transfer in both directions.
-          </p>
-        </div>
-        <div class="method-item">
-          <h3>Five timed probes</h3>
-          <p>
-            <code>/v2/</code> liveness, a token handshake, <code>docker push</code>,
-            an authenticated manifest read, then <code>docker pull</code> with the local
-            cache cleared.
-          </p>
-        </div>
-        <div class="method-item">
-          <h3>Results live in git</h3>
-          <p>
-            Every measurement is appended to a JSON Lines file in the repository. There
-            is no database and no collector to keep running — the history is the commit
-            log.
-          </p>
-        </div>
-        <div class="method-item">
-          <h3>Known limits</h3>
-          <p>
-            These are CI runners on shared networks, not a lab. Numbers include real
-            scheduling noise, which is exactly what a build pipeline experiences.
-          </p>
-        </div>
-      </div>
-    </section>
-
   </main>
 
   <footer class="wrap footer">
@@ -256,7 +207,10 @@
       Measured on and powered by
       <a href="https://www.ubicloud.com/use-cases/github-actions" rel="noopener">Ubicloud runners</a>.
     </p>
-    <p class="footer-note" id="footer-note"></p>
+    <p class="footer-note">
+      <span id="footer-note"></span>
+      <a id="source-link" href="#" hidden rel="noopener">Source and raw data</a>
+    </p>
   </footer>
 
 </div>
