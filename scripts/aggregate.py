@@ -10,6 +10,7 @@ Standard library only, on purpose: the whole pipeline stays `python3 script.py`.
 from __future__ import annotations
 
 import json
+import math
 import os
 import statistics
 from collections import defaultdict
@@ -44,12 +45,27 @@ def parse_ts(value: str) -> datetime:
 
 
 def pct(values: list[float], q: float) -> float | None:
-    """Nearest-rank percentile. Returns None for an empty sample."""
+    """Linearly interpolated percentile. Returns None for an empty sample.
+
+    Interpolating rather than picking a nearest rank matters most when the
+    sample is small, which is exactly when these figures are first read: on an
+    even count a nearest-rank p50 has to break a tie between the two middle
+    values, and with six samples that choice can move the headline number by
+    tens of milliseconds. This agrees with statistics.median at q=0.5.
+    """
     if not values:
         return None
     ordered = sorted(values)
-    idx = min(len(ordered) - 1, max(0, int(round(q * (len(ordered) - 1)))))
-    return round(ordered[idx], 1)
+    if len(ordered) == 1:
+        return round(ordered[0], 1)
+
+    pos = q * (len(ordered) - 1)
+    lo = math.floor(pos)
+    hi = math.ceil(pos)
+    if lo == hi:
+        return round(ordered[lo], 1)
+    frac = pos - lo
+    return round(ordered[lo] * (1 - frac) + ordered[hi] * frac, 1)
 
 
 def median(values: list[float]) -> float | None:

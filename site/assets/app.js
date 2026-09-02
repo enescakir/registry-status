@@ -167,19 +167,41 @@ function renderRibbon(groups) {
 
   const eu = rows.find((r) => r.region.key === 'ubicloud');
   const us = rows.find((r) => r.region.key === 'github');
-  if (eu && us) {
-    const delta = eu.phases.total - us.phases.total;
-    const ratio = us.phases.total > 0 ? eu.phases.total / us.phases.total : null;
-    const handshake = (eu.phases.segs[1] + eu.phases.segs[2]) - (us.phases.segs[1] + us.phases.segs[2]);
-    const share = delta > 0 ? Math.round((handshake / delta) * 100) : 0;
-    verdict.innerHTML =
-      `A request from Europe waits <b>${fmtMs(Math.abs(delta))}</b> longer for its first byte` +
-      (ratio ? `, <b>${ratio.toFixed(1)}×</b> the US round trip` : '') +
-      `. ${share > 0 ? `About <b>${share}%</b> of that gap is spent opening the connection, before a single byte of image moves.`
-        : 'The gap is in the registry response itself, not in opening the connection.'}`;
-  } else {
+  if (!eu || !us) {
     verdict.textContent = 'Waiting for measurements from both regions.';
+    return;
   }
+
+  /* State the totals, then explain the mechanism. Written to hold whichever
+     way round the measurements come out: the handshake and the registry's own
+     response time move independently, and they often point opposite ways. */
+  const sum = (segs, from, to) => segs.slice(from, to).reduce((a, b) => a + b, 0);
+  const euShake = sum(eu.phases.segs, 0, 3);
+  const usShake = sum(us.phases.segs, 0, 3);
+  const euWait = eu.phases.segs[3];
+  const usWait = us.phases.segs[3];
+  const dShake = euShake - usShake;
+  const dWait = euWait - usWait;
+  const flat = (v) => Math.abs(v) < 3;
+
+  let mechanism;
+  if (flat(dShake) && flat(dWait)) {
+    mechanism = 'Both paths behave the same at every stage.';
+  } else if (dShake < 0 && dWait > 0) {
+    mechanism = `Europe opens the connection <b>${fmtMs(-dShake)}</b> faster, then waits `
+      + `<b>${fmtMs(dWait)}</b> longer for the registry to answer.`;
+  } else if (dShake > 0 && dWait < 0) {
+    mechanism = `Europe spends <b>${fmtMs(dShake)}</b> more opening the connection, then gets `
+      + `its answer <b>${fmtMs(-dWait)}</b> sooner.`;
+  } else if (dShake <= 0 && dWait <= 0) {
+    mechanism = 'Europe is ahead at both the handshake and the response.';
+  } else {
+    mechanism = 'Europe is behind at both the handshake and the response.';
+  }
+
+  verdict.innerHTML =
+    `ghcr.io returns a first byte in <b>${fmtMs(eu.phases.total)}</b> from Europe and `
+    + `<b>${fmtMs(us.phases.total)}</b> from the United States. ${mechanism}`;
 }
 
 /* -------------------------------------------------------------- hero facts */

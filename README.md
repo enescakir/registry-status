@@ -5,8 +5,10 @@ places at once: Ubicloud runners in Europe and GitHub-hosted runners in the
 United States. The results are committed to this repository and published as a
 static site.
 
-The point is the comparison. GitHub's registry lives in the US; a European CI
-runner pays for that distance on every `docker pull`. This measures how much.
+The point is the comparison. ghcr.io is fronted by an anycast edge, so how far
+it really is from a European CI runner - and whether that differs from a
+GitHub-hosted runner in the US - is an empirical question rather than a given.
+This measures it, stage by stage, instead of assuming an answer.
 
 - **Site:** GitHub Pages, published from `site/` by [`publish.yml`](.github/workflows/publish.yml)
 - **Data:** append-only JSON Lines under [`data/`](data/) — no database
