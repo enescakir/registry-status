@@ -220,9 +220,20 @@ function measuredCadence(groups) {
   }
   if (!gaps.length) return null;
   gaps.sort((a, b) => a - b);
+  /* Scheduled runs on GitHub queue late, often by half an hour, so the
+     measured gap wanders either side of the interval. Snap to the nearest
+     familiar cadence instead of reporting the wobble. */
   const mins = Math.round(gaps[Math.floor(gaps.length / 2)] / 60000);
-  if (mins >= 55 && mins <= 65) return 'Every hour';
-  if (mins >= 120) return `Every ${Math.round(mins / 60)} hours`;
+  for (const [low, high, label] of [
+    [4, 8, 'Every 5 minutes'],
+    [8, 22, 'Every 15 minutes'],
+    [22, 45, 'Every 30 minutes'],
+    [45, 90, 'Every hour'],
+    [90, 150, 'Every 2 hours'],
+  ]) {
+    if (mins >= low && mins < high) return label;
+  }
+  if (mins >= 150) return `Every ${Math.round(mins / 60)} hours`;
   return `Every ${mins} minutes`;
 }
 
