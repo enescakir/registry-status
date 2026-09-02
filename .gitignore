@@ -3,3 +3,7 @@ site/data/
 
 # Local probe output
 results.jsonl
+
+# Python bytecode
+__pycache__/
+*.pyc
