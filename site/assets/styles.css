@@ -144,21 +144,6 @@ a:hover { text-decoration-color: var(--eu); }
   padding-block: 22px;
 }
 
-.brand { display: flex; align-items: baseline; gap: 10px; }
-.brand-mark {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-.brand-sub {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
-
 .masthead-right { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 
 .pill {

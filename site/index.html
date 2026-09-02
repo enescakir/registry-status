@@ -3,17 +3,119 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ghcr.io from Europe — registry status</title>
-<meta name="description" content="Hourly availability and performance measurements for ghcr.io, taken from CI runners in Europe and the United States.">
+<title>ghcr.io status and latency — Europe and the US</title>
+<meta name="description" content="Hourly availability, response time and push/pull throughput for ghcr.io, measured from CI runners in Europe and the United States. Updated every hour.">
 <meta name="color-scheme" content="dark">
-<meta property="og:title" content="ghcr.io from Europe — registry status">
-<meta property="og:description" content="Hourly push, pull and API measurements for ghcr.io from CI runners in Europe and the United States.">
+<meta name="theme-color" content="#0a1320">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://enescakir.github.io/registry-status/">
+
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="registry-status">
+<meta property="og:locale" content="en">
+<meta property="og:url" content="https://enescakir.github.io/registry-status/">
+<meta property="og:title" content="ghcr.io status and latency — Europe and the US">
+<meta property="og:description" content="Hourly availability, response time and push/pull throughput for ghcr.io, measured from CI runners in Europe and the United States.">
+<meta property="og:image" content="https://enescakir.github.io/registry-status/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ghcr.io status: time to first byte compared between a CI runner in Europe and one in the United States.">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ghcr.io status and latency — Europe and the US">
+<meta name="twitter:description" content="Hourly availability, response time and push/pull throughput for ghcr.io, measured from CI runners in Europe and the United States.">
+<meta name="twitter:image" content="https://enescakir.github.io/registry-status/og.png">
+<meta name="twitter:image:alt" content="ghcr.io status: time to first byte compared between a CI runner in Europe and one in the United States.">
+
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230a1320'/><rect x='6' y='12' width='9' height='8' rx='2' fill='%233987e5'/><rect x='17' y='12' width='9' height='8' rx='2' fill='%23d95926'/></svg>">
+<link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Martian+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="assets/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "ghcr.io availability and latency from Europe and the United States",
+  "description": "Hourly measurements of the ghcr.io container registry taken from two CI runners at once, one in Europe and one in the United States. Each run times a registry liveness check, a token handshake, an authenticated manifest read, a docker push and a docker pull of a freshly generated 20 MB image, and records the DNS, TCP, TLS and time-to-first-byte breakdown.",
+  "url": "https://enescakir.github.io/registry-status/",
+  "license": "https://opensource.org/licenses/MIT",
+  "isAccessibleForFree": true,
+  "creator": {
+    "@type": "Person",
+    "name": "Enes Çakır"
+  },
+  "keywords": [
+    "ghcr.io",
+    "GitHub Container Registry",
+    "container registry",
+    "registry latency",
+    "registry availability",
+    "docker pull",
+    "docker push",
+    "continuous integration",
+    "CI runners",
+    "Europe",
+    "United States"
+  ],
+  "measurementTechnique": "Timed HTTP and OCI registry probes issued from CI runners",
+  "variableMeasured": [
+    {
+      "@type": "PropertyValue",
+      "name": "Availability",
+      "unitText": "percent"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "Manifest response time",
+      "unitText": "ms"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TCP connect time",
+      "unitText": "ms"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TLS handshake time",
+      "unitText": "ms"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "Time to first byte",
+      "unitText": "ms"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "Pull throughput",
+      "unitText": "MB/s"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "Push throughput",
+      "unitText": "MB/s"
+    }
+  ],
+  "temporalCoverage": "2026-09-02/..",
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "name": "Aggregated summary",
+      "encodingFormat": "application/json",
+      "contentUrl": "https://enescakir.github.io/registry-status/data/ghcr.json"
+    },
+    {
+      "@type": "DataDownload",
+      "name": "Raw measurements, JSON Lines",
+      "encodingFormat": "application/x-ndjson",
+      "contentUrl": "https://github.com/enescakir/registry-status/tree/main/data/ghcr"
+    }
+  ]
+}
+</script>
 </head>
 <body>
 <a class="skip-link" href="#now">Skip to current status</a>
@@ -21,10 +123,6 @@
 <div class="shell">
 
   <header class="wrap masthead">
-    <div class="brand">
-      <span class="brand-mark">registry-status</span>
-      <span class="brand-sub">ghcr.io</span>
-    </div>
     <div class="masthead-right">
       <span class="pill" id="global-pill">
         <span class="dot dot-unknown" id="global-dot"></span>
@@ -35,6 +133,17 @@
   </header>
 
   <main>
+
+    <noscript>
+      <div class="wrap" style="padding-top:22px">
+        <p class="empty">
+          The measurements on this page are rendered in the browser. Without
+          JavaScript you can still read them straight from
+          <a href="data/ghcr.json">data/ghcr.json</a>, or the raw hourly log in
+          <a href="https://github.com/enescakir/registry-status/tree/main/data/ghcr" rel="noopener">the repository</a>.
+        </p>
+      </div>
+    </noscript>
 
     <!-- ------------------------------------------------------------ hero -->
     <section class="wrap band band-hero">

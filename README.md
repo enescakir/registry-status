@@ -66,13 +66,27 @@ from different months incomparable.
 probes/ghcr.sh              measure ghcr.io from the current runner -> JSON Lines
 scripts/ingest.py           merge a run's results into data/, idempotently
 scripts/aggregate.py        data/ -> site/data/*.json (the site's only input)
+scripts/seo.py              robots.txt, sitemap.xml, absolute URLs
 scripts/report.py           per-run Markdown table for the job summary
 scripts/prune-packages.sh   delete old probe image versions
 data/ghcr/YYYY-MM.jsonl     every measurement ever taken, one JSON per line
 site/                       the published site: no build step, no npm
+site/og.png                 social preview card, 1200x630
 ```
 
-`site/data/` is generated at publish time and is not committed.
+`site/data/`, `site/robots.txt` and `site/sitemap.xml` are generated at publish
+time and are not committed.
+
+### Absolute URLs
+
+The canonical link, the Open Graph tags and the JSON-LD in `site/index.html`
+carry this project's Pages URL, so the file is correct opened directly or
+deployed untouched. The publish workflow runs `scripts/seo.py` with the base URL
+Pages reports and rewrites every occurrence, so pointing a custom domain at the
+site needs no edit to the HTML.
+
+`site/og.png` is checked in rather than generated, since rendering it needs a
+browser. Regenerate it by hand if the title or the palette changes.
 
 ### Data format
 
@@ -113,6 +127,7 @@ by 144 versions a day.
 
 ```bash
 python3 scripts/aggregate.py          # data/ -> site/data/
+python3 scripts/seo.py                # robots.txt + sitemap.xml (optional)
 python3 -m http.server -d site 8000   # then open http://localhost:8000
 ```
 
@@ -145,8 +160,15 @@ ECR:
 
 ## Hosting elsewhere
 
-`site/` is plain static files. For Cloudflare Pages, set the build command to
-`python3 scripts/aggregate.py` and the output directory to `site`.
+`site/` is plain static files. For Cloudflare Pages, set the output directory to
+`site` and the build command to:
+
+```bash
+python3 scripts/aggregate.py && python3 scripts/seo.py https://your-domain/
+```
+
+Passing the domain keeps the canonical link, the Open Graph tags and the sitemap
+pointing at wherever the site actually lives.
 
 ---
 

@@ -11,6 +11,7 @@ on:
     paths:
       - 'site/**'
       - 'scripts/aggregate.py'
+      - 'scripts/seo.py'
       - '.github/workflows/publish.yml'
   workflow_dispatch:
 
@@ -38,11 +39,17 @@ jobs:
         run: python3 scripts/aggregate.py
 
       - name: Configure Pages
+        id: pages
         # enablement turns Pages on via the API on first run, so the repository
         # needs no manual setup before the first deploy.
         uses: actions/configure-pages@v5
         with:
           enablement: true
+
+      - name: Generate robots.txt and sitemap.xml
+        # Uses the base URL Pages reports, so a custom domain needs no edit to
+        # the canonical link or the Open Graph tags.
+        run: python3 scripts/seo.py "${{ steps.pages.outputs.base_url }}"
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
