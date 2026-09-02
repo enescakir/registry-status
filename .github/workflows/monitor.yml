@@ -1,0 +1,164 @@
+name: Monitor ghcr.io
+
+on:
+  schedule:
+    # Hourly, offset off the hour to avoid the scheduling stampede at :00.
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      reps:
+        description: 'Repetitions per runner'
+        type: string
+        default: '3'
+      blob_mb:
+        description: 'Image payload size in MB'
+        type: string
+        default: '20'
+
+permissions:
+  contents: read
+
+# Never let two monitor runs commit data at the same time.
+concurrency:
+  group: monitor-ghcr
+  cancel-in-progress: false
+
+env:
+  GHCR_PACKAGE: registry-status-probe
+  REPS: ${{ github.event.inputs.reps || '3' }}
+  BLOB_MB: ${{ github.event.inputs.blob_mb || '20' }}
+
+jobs:
+  probe:
+    name: Probe from ${{ matrix.group }} (${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - group: github
+            runner: ubuntu-22.04
+            region: us-east
+          - group: ubicloud
+            runner: ubicloud
+            region: eu-central
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Probe ghcr.io
+        env:
+          GHCR_OWNER: ${{ github.repository_owner }}
+          GHCR_PACKAGE: ${{ env.GHCR_PACKAGE }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROBE_GROUP: ${{ matrix.group }}
+          PROBE_RUNNER: ${{ matrix.runner }}
+          PROBE_REGION: ${{ matrix.region }}
+          RUN_ID: ${{ github.run_id }}
+          REPS: ${{ env.REPS }}
+          BLOB_MB: ${{ env.BLOB_MB }}
+          OUT_FILE: ${{ runner.temp }}/results.jsonl
+        run: ./probes/ghcr.sh
+
+      - name: Upload results
+        # A failed probe still produces rows worth recording, so always upload.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.group }}
+          path: ${{ runner.temp }}/results.jsonl
+          if-no-files-found: warn
+          retention-days: 7
+
+  persist:
+    name: Persist results
+    needs: probe
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Download results
+        # No artifact at all is possible if every probe job died early. That is
+        # not a reason to skip publishing, so tolerate it here and let the
+        # ingest step find an empty directory.
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/artifacts
+          pattern: results-*
+
+      - name: Commit results
+        env:
+          BRANCH: ${{ github.ref_name }}
+          ARTIFACTS: ${{ runner.temp }}/artifacts
+        run: |
+          mkdir -p "$ARTIFACTS"
+          git config user.name 'registry-status[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          # Re-apply the ingest onto the freshest remote state on every attempt.
+          # ingest.py is idempotent, so this is safe to repeat and cannot
+          # produce a merge conflict in the append-only data files.
+          for attempt in 1 2 3 4 5; do
+            # FETCH_HEAD rather than origin/$BRANCH: checkout makes a shallow
+            # clone, and FETCH_HEAD is unambiguously what we just fetched.
+            git fetch --quiet origin "$BRANCH"
+            git reset --quiet --hard FETCH_HEAD
+
+            python3 scripts/ingest.py "$ARTIFACTS"
+
+            git add data
+            if git diff --cached --quiet; then
+              echo 'No new data to commit.'
+              exit 0
+            fi
+
+            git commit --quiet -m "data: ghcr.io probes $(date -u +'%Y-%m-%d %H:%MZ') (run ${{ github.run_id }})"
+            if git push --quiet origin "HEAD:$BRANCH"; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+
+            echo "Push rejected on attempt $attempt; retrying."
+            sleep $(( RANDOM % 15 + 5 ))
+          done
+
+          echo 'Could not push results after 5 attempts.' >&2
+          exit 1
+
+      - name: Job summary
+        if: always()
+        env:
+          ARTIFACTS: ${{ runner.temp }}/artifacts
+        run: python3 scripts/report.py "$ARTIFACTS" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Prune probe images
+        # Housekeeping only: a full package is not a monitoring failure.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          PACKAGE: ${{ env.GHCR_PACKAGE }}
+          KEEP: '30'
+        run: ./scripts/prune-packages.sh
+
+  publish:
+    name: Publish site
+    needs: persist
+    if: always()
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/publish.yml

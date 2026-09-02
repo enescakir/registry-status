@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ghcr.io from Europe — registry status</title>
+<meta name="description" content="Hourly availability and performance measurements for ghcr.io, taken from Ubicloud runners in Europe and GitHub-hosted runners in the United States.">
+<meta name="color-scheme" content="dark">
+<meta property="og:title" content="ghcr.io from Europe — registry status">
+<meta property="og:description" content="Hourly push, pull and API measurements for ghcr.io from EU and US CI runners.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230a1320'/><rect x='6' y='12' width='9' height='8' rx='2' fill='%233987e5'/><rect x='17' y='12' width='9' height='8' rx='2' fill='%23d95926'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Martian+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<a class="skip-link" href="#now">Skip to current status</a>
+
+<div class="shell">
+
+  <header class="wrap masthead">
+    <div class="brand">
+      <span class="brand-mark">registry-status</span>
+      <span class="brand-sub">ghcr.io</span>
+    </div>
+    <div class="masthead-right">
+      <span class="pill" id="global-pill">
+        <span class="dot dot-unknown" id="global-dot"></span>
+        <span id="global-state">Loading measurements</span>
+      </span>
+      <span class="stamp" id="global-stamp"></span>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ------------------------------------------------------------ hero -->
+    <section class="wrap band band-hero">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Container registry reachability</p>
+          <h1>How far is ghcr.io from Europe?</h1>
+          <p class="lede">
+            Every hour, <strong>Ubicloud runners in Europe</strong> and
+            <strong>GitHub-hosted runners in the United States</strong> push and pull the
+            same freshly generated image to ghcr.io, and time every stage of the
+            request. Same payload, same script, two continents.
+          </p>
+        </div>
+
+        <!-- Signature: where the round trip actually goes. -->
+        <figure class="ribbon" id="ribbon">
+          <div class="ribbon-head">
+            <p class="ribbon-caption">Time to first byte, by stage</p>
+            <p class="ribbon-caption" id="ribbon-window">median · last 24 h</p>
+          </div>
+          <div id="ribbon-rows"></div>
+          <figcaption>
+            <p class="ribbon-verdict" id="ribbon-verdict"></p>
+            <ul class="legend" style="margin-top:16px">
+              <li class="legend-item"><span class="legend-swatch" style="background:var(--phase-1)"></span>DNS</li>
+              <li class="legend-item"><span class="legend-swatch" style="background:var(--phase-2)"></span>TCP connect</li>
+              <li class="legend-item"><span class="legend-swatch" style="background:var(--phase-3)"></span>TLS handshake</li>
+              <li class="legend-item"><span class="legend-swatch" style="background:var(--phase-4)"></span>Waiting for first byte</li>
+            </ul>
+          </figcaption>
+        </figure>
+      </div>
+
+      <dl class="hero-facts" id="hero-facts"></dl>
+    </section>
+
+    <!-- ----------------------------------------------------------- cards -->
+    <section class="wrap band" id="now">
+      <div class="band-head">
+        <p class="eyebrow">Right now</p>
+        <h2 class="band-title">Latest measurement from each region</h2>
+        <p class="band-note">
+          Throughput is measured on a fresh, incompressible payload, so nothing is
+          served from a layer cache on either side.
+        </p>
+      </div>
+      <div class="card-grid" id="cards"></div>
+    </section>
+
+    <!-- ---------------------------------------------------------- uptime -->
+    <section class="wrap band" id="availability">
+      <div class="band-head">
+        <p class="eyebrow">Availability</p>
+        <h2 class="band-title">Availability, day by day</h2>
+        <p class="band-note">
+          One cell per day, up to 90 days of history. A day counts as fully available
+          only when every probe in it succeeded — registry API, push and pull alike.
+        </p>
+      </div>
+      <div id="uptime"></div>
+      <ul class="legend" style="margin-top:28px">
+        <li class="legend-item"><span class="legend-swatch" style="background:var(--good)"></span>Every probe passed</li>
+        <li class="legend-item"><span class="legend-swatch" style="background:var(--warning)"></span>98% to 100%</li>
+        <li class="legend-item"><span class="legend-swatch" style="background:var(--serious)"></span>95% to 98%</li>
+        <li class="legend-item"><span class="legend-swatch" style="background:var(--critical)"></span>Below 95%</li>
+        <li class="legend-item"><span class="legend-swatch" style="background:var(--rule)"></span>No data</li>
+      </ul>
+    </section>
+
+    <!-- ---------------------------------------------------------- charts -->
+    <section class="wrap band" id="trend">
+      <div class="band-head">
+        <p class="eyebrow">Over time</p>
+        <h2 class="band-title">Response time and throughput</h2>
+        <p class="band-note">
+          Ranges up to 7 days plot one point per hourly run; 30 and 90 days plot the
+          daily median.
+        </p>
+      </div>
+
+      <div class="filters" role="group" aria-label="Time range">
+        <span class="filters-label">Range</span>
+        <button class="chip" type="button" data-range="24h" aria-pressed="false">24 hours</button>
+        <button class="chip" type="button" data-range="7d" aria-pressed="true">7 days</button>
+        <button class="chip" type="button" data-range="30d" aria-pressed="false">30 days</button>
+        <button class="chip" type="button" data-range="90d" aria-pressed="false">90 days</button>
+      </div>
+
+      <div class="chart-stack">
+        <div class="chart-card">
+          <div class="chart-head">
+            <div>
+              <h3 class="chart-title">Manifest response time</h3>
+              <p class="chart-sub">An authenticated manifest read. Lower is better.</p>
+            </div>
+            <ul class="legend" id="legend-latency"></ul>
+          </div>
+          <div class="plot" data-chart="latency"></div>
+          <details class="table-view" data-table="latency">
+            <summary>Show these values as a table</summary>
+            <div class="table-scroll"></div>
+          </details>
+        </div>
+
+        <div class="chart-pair">
+          <div class="chart-card">
+            <div class="chart-head">
+              <div>
+                <h3 class="chart-title">Pull throughput</h3>
+                <p class="chart-sub">Download of the probe image. Higher is better.</p>
+              </div>
+              <ul class="legend" id="legend-pull"></ul>
+            </div>
+            <div class="plot" data-chart="pull"></div>
+            <details class="table-view" data-table="pull">
+              <summary>Show these values as a table</summary>
+              <div class="table-scroll"></div>
+            </details>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-head">
+              <div>
+                <h3 class="chart-title">Push throughput</h3>
+                <p class="chart-sub">Upload of the probe image. Higher is better.</p>
+              </div>
+              <ul class="legend" id="legend-push"></ul>
+            </div>
+            <div class="plot" data-chart="push"></div>
+            <details class="table-view" data-table="push">
+              <summary>Show these values as a table</summary>
+              <div class="table-scroll"></div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------ percentiles -->
+    <section class="wrap band" id="percentiles">
+      <div class="band-head">
+        <p class="eyebrow">Distribution</p>
+        <h2 class="band-title">Percentiles by window</h2>
+        <p class="band-note">
+          p50 is the typical run; p95 is the run that made someone's build feel slow.
+        </p>
+      </div>
+      <div class="table-scroll" id="windows-table"></div>
+    </section>
+
+    <!-- -------------------------------------------------------- incidents -->
+    <section class="wrap band" id="failures">
+      <div class="band-head">
+        <p class="eyebrow">Failure log</p>
+        <h2 class="band-title">Most recent failures</h2>
+        <p class="band-note">
+          Grouped by run, newest first. One repetition failing out of three is a blip;
+          all three failing is a window where ghcr.io was unusable from that region.
+        </p>
+      </div>
+      <div id="incidents"></div>
+    </section>
+
+    <!-- ---------------------------------------------------------- method -->
+    <section class="wrap band" id="method">
+      <div class="band-head">
+        <p class="eyebrow">Method</p>
+        <h2 class="band-title">How these numbers are produced</h2>
+      </div>
+      <div class="method">
+        <div class="method-item">
+          <h3>Two runners, one script</h3>
+          <p>
+            A matrix job runs the identical probe script on a Ubicloud runner in Europe
+            and a GitHub-hosted runner in the United States, three repetitions each,
+            once an hour.
+          </p>
+        </div>
+        <div class="method-item">
+          <h3>A fresh payload every time</h3>
+          <p>
+            Each repetition builds an image from random bytes. Registries deduplicate
+            layers by digest, so re-pushing a known layer would measure nothing —
+            a new payload forces a real transfer in both directions.
+          </p>
+        </div>
+        <div class="method-item">
+          <h3>Five timed probes</h3>
+          <p>
+            <code>/v2/</code> liveness, a token handshake, <code>docker push</code>,
+            an authenticated manifest read, then <code>docker pull</code> with the local
+            cache cleared.
+          </p>
+        </div>
+        <div class="method-item">
+          <h3>Results live in git</h3>
+          <p>
+            Every measurement is appended to a JSON Lines file in the repository. There
+            is no database and no collector to keep running — the history is the commit
+            log.
+          </p>
+        </div>
+        <div class="method-item">
+          <h3>Known limits</h3>
+          <p>
+            These are CI runners on shared networks, not a lab. Numbers include real
+            scheduling noise, which is exactly what a build pipeline experiences.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="wrap footer">
+    <p class="powered">
+      Measured on and powered by
+      <a href="https://www.ubicloud.com/use-cases/github-actions" rel="noopener">Ubicloud runners</a>.
+    </p>
+    <p class="footer-note" id="footer-note"></p>
+  </footer>
+
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

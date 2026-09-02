@@ -1,0 +1,50 @@
+name: Publish site
+
+on:
+  # Called by the monitor workflow after new results land. A push made with
+  # GITHUB_TOKEN does not trigger workflows, so the deploy has to be invoked
+  # explicitly rather than by watching the data commits.
+  workflow_call:
+  # Site or pipeline changes pushed by a human.
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'scripts/aggregate.py'
+      - '.github/workflows/publish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Aggregate results
+        run: python3 scripts/aggregate.py
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
