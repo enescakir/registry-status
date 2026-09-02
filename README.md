@@ -14,8 +14,11 @@ runner pays for that distance on every `docker pull`. This measures how much.
 
 ## Setting it up
 
-1. **Allow the workflow to commit.** Settings → Actions → General → Workflow
-   permissions: **Read and write**.
+1. **Allow workflows to write.** Settings → Actions → General → Workflow
+   permissions: **Read and write**. Nothing works until this is set: it is what
+   lets the workflow commit results and create the Pages site. While it is
+   read-only, every `permissions:` block in the workflows is capped to nothing
+   and the publish job fails with *Resource not accessible by integration*.
 2. **Check the Ubicloud runner label.** The matrix in
    [`monitor.yml`](.github/workflows/monitor.yml) uses `ubicloud`. Change it if
    your installation exposes a different label (`ubicloud-standard-4`, an ARM
@@ -23,8 +26,9 @@ runner pays for that distance on every `docker pull`. This measures how much.
    labels it correctly.
 3. **Run it once by hand.** Actions → *Monitor ghcr.io* → Run workflow. The
    first run creates the `registry-status-probe` package, appends results to
-   `data/ghcr/`, and deploys the site. Pages is switched on automatically by
-   `configure-pages`, so there is nothing to set up beforehand.
+   `data/ghcr/`, and deploys the site. `configure-pages` switches Pages on
+   itself, so there is no separate setup step — if that is blocked for the
+   repository, set Settings → Pages → Source: **GitHub Actions** by hand.
 4. **Make the probe package public** (recommended — see *Traffic* below).
    Packages → `registry-status-probe` → Package settings → Change visibility.
 
